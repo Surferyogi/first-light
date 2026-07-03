@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>First Light</title>
+<meta name="description" content="A small piece of calm for your first waking minute. Breathe, then one short affirmation.">
+<meta name="theme-color" content="#0e1026">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="First Light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0e1026; --amber:#ffc178;
+  --ivory:#fff6e8; --ivory-dim:rgba(255,246,232,.62);
+  --fg:var(--ivory); --fg-dim:var(--ivory-dim);
+  --fg-faint:rgba(255,246,232,.42); --fg-ghost:rgba(255,246,232,.35);
+  --btn-border:rgba(255,246,232,.28); --accent:var(--amber);
+  --txt-shadow:0 2px 30px rgba(10,10,30,.35);
+}
+body.lightScene{
+  --fg:#1e2440; --fg-dim:rgba(30,36,64,.70);
+  --fg-faint:rgba(30,36,64,.55); --fg-ghost:rgba(30,36,64,.45);
+  --btn-border:rgba(30,36,64,.35); --accent:#b46a2e;
+  --txt-shadow:0 2px 24px rgba(255,255,255,.45);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'Karla',system-ui,sans-serif;
+  background:var(--night);
+  color:var(--fg);
+  overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;-webkit-user-select:none;
+}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+
+/* ---------- Sky + scene engine ---------- */
+#sky{position:fixed;inset:0;z-index:0}
+#sky .layer{position:absolute;inset:0;transition:opacity 6s ease}
+#sky .night{background:linear-gradient(180deg,#0a0c1f 0%,#0e1026 55%,#1b1a3d 100%);opacity:1;z-index:3}
+#sky .sceneSky{opacity:0;z-index:1}
+body.risen #sky .night{opacity:0;pointer-events:none}
+body.risen #sky .sceneSky{opacity:1}
+#stars{position:absolute;inset:0;z-index:4;transition:opacity 5s ease;opacity:.9;pointer-events:none}
+body.risen #stars{opacity:0}
+.star{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(255,246,232,.8);animation:twinkle 3.4s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:.95}}
+#scene{position:absolute;inset:0;z-index:2;opacity:0;transition:opacity 6s ease;overflow:hidden;pointer-events:none}
+body.risen #scene{opacity:1}
+
+/* --- sunrise / sunset --- */
+.sunDisc{
+  position:absolute;left:50%;bottom:-22vmin;width:34vmin;height:34vmin;
+  transform:translateX(-50%);border-radius:50%;filter:blur(1px);
+  background:radial-gradient(circle at 50% 40%,#fff3d6 0%,#ffd89a 45%,#ffb066 78%,rgba(255,176,102,0) 100%);
+  box-shadow:0 0 18vmin 6vmin rgba(255,183,110,.35),0 0 42vmin 14vmin rgba(224,116,95,.22);
+  transition:transform 8s cubic-bezier(.22,.8,.36,1);
+}
+body.risen .sunDisc{transform:translateX(-50%) translateY(-16vmin)}
+.sunDisc.setting{
+  background:radial-gradient(circle at 50% 40%,#ffe2c2 0%,#ffb069 45%,#f06a45 78%,rgba(240,106,69,0) 100%);
+  box-shadow:0 0 18vmin 6vmin rgba(240,120,80,.38),0 0 42vmin 14vmin rgba(180,60,60,.25);
+}
+body.risen .sunDisc.setting{transform:translateX(-50%) translateY(-10vmin)}
+.hazeBand{position:absolute;left:0;right:0;bottom:0;height:30vh;
+  background:linear-gradient(0deg,rgba(255,193,120,.28),rgba(255,193,120,0))}
+.hazeBand.setting{background:linear-gradient(0deg,rgba(240,120,80,.30),rgba(240,120,80,0))}
+
+/* --- lake --- */
+.water{position:absolute;left:0;right:0;bottom:0;height:42vh;
+  background:linear-gradient(180deg,#3a2f57 0%,#241f3f 40%,#141227 100%)}
+.moonDisc{position:absolute;left:50%;top:22vh;width:12vmin;height:12vmin;border-radius:50%;
+  transform:translateX(-50%);
+  background:radial-gradient(circle at 42% 36%,#fffdf2 0%,#fbeecb 55%,#e8cf9a 100%);
+  box-shadow:0 0 8vmin 2.5vmin rgba(250,235,200,.35)}
+.moonGlow{position:absolute;left:50%;top:58vh;width:10vmin;height:36vh;
+  transform:translateX(-50%);filter:blur(10px);
+  background:linear-gradient(180deg,rgba(250,235,200,.35),rgba(250,235,200,.04))}
+.ripple{position:absolute;left:50%;height:2px;border-radius:2px;
+  background:rgba(250,238,208,.5);filter:blur(1px);
+  transform:translateX(-50%) scaleX(1);
+  animation:rippleX var(--dur,7s) ease-in-out var(--delay,0s) infinite}
+@keyframes rippleX{0%,100%{transform:translateX(-50%) scaleX(.55);opacity:.35}50%{transform:translateX(-50%) scaleX(1);opacity:.75}}
+
+/* --- clouds --- */
+.cloud{position:absolute;width:20vmin;height:7vmin;border-radius:999px;
+  background:rgba(255,255,255,.85);filter:blur(3px);
+  box-shadow:6vmin -2.6vmin 0 -1vmin rgba(255,255,255,.85),
+             -6.5vmin -2vmin 0 -1.6vmin rgba(255,255,255,.78),
+             1vmin 1.4vmin 0 -1.4vmin rgba(255,255,255,.8);
+  animation:driftX var(--dur,90s) linear var(--delay,0s) infinite}
+.cloud.dim{opacity:.55;filter:blur(5px)}
+@keyframes driftX{from{transform:translateX(-30vw) scale(var(--sc,1))}to{transform:translateX(130vw) scale(var(--sc,1))}}
+
+/* --- snow --- */
+.flake{position:absolute;top:-4vh;left:var(--x,50%);width:var(--sz,4px);height:var(--sz,4px);
+  border-radius:50%;background:rgba(255,255,255,.92);filter:blur(.4px);
+  animation:fall var(--dur,9s) linear var(--delay,0s) infinite}
+@keyframes fall{to{transform:translate(var(--drift,3vw),110vh)}}
+.snowGround{position:absolute;left:-4vw;right:-4vw;bottom:-6vh;height:20vh;border-radius:50% 50% 0 0;
+  background:linear-gradient(180deg,#eef3f9,#cfdcec)}
+
+/* --- bamboo --- */
+.stalk{position:absolute;bottom:0;border-radius:10px;transform-origin:50% 100%;
+  clip-path:polygon(12% 0,88% 0,100% 100%,0% 100%);
+  background:
+    repeating-linear-gradient(180deg,rgba(16,44,26,0) 0 14vmin,rgba(16,44,26,.55) 14vmin calc(14vmin + 3px)),
+    linear-gradient(90deg,#245536,#54925f 45%,#2c5e3d);
+  animation:sway var(--dur,7s) ease-in-out var(--delay,0s) infinite alternate}
+.stalk.back{filter:blur(3px);opacity:.55}
+@keyframes sway{from{transform:rotate(-1deg)}to{transform:rotate(1deg)}}
+.leafTuft{position:absolute;width:9vmin;height:3vmin;border-radius:50% 50% 50% 0;
+  background:#3f7a4c;filter:blur(1px);opacity:.8;transform-origin:0 100%;
+  animation:sway var(--dur,6s) ease-in-out var(--delay,0s) infinite alternate}
+
+/* --- breeze trees --- */
+.ground{position:absolute;left:0;right:0;bottom:0;height:16vh;
+  background:linear-gradient(180deg,#28402f,#16281d)}
+.tree{position:absolute;transform-origin:50% 100%;
+  animation:treeSway var(--dur,9s) ease-in-out var(--delay,0s) infinite alternate}
+@keyframes treeSway{from{transform:scale(var(--sc,1)) rotate(-.8deg)}to{transform:scale(var(--sc,1)) rotate(.8deg)}}
+.tree .trunk{position:absolute;left:50%;bottom:0;width:1.6vmin;height:15vmin;
+  transform:translateX(-50%);background:#2b2320;
+  clip-path:polygon(30% 0,70% 0,100% 100%,0% 100%)}
+.tree .canopy{position:absolute;border-radius:50%;background:#22492e;filter:blur(1px)}
+.tree.back{filter:blur(3px);opacity:.6}
+
+/* ---------- Stage ---------- */
+#stage{
+  position:relative;z-index:2;height:100%;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:calc(env(safe-area-inset-top,0px) + 28px) 24px calc(env(safe-area-inset-bottom,0px) + 22px);
+  text-align:center;
+}
+header{display:flex;flex-direction:column;gap:6px;align-items:center;
+  opacity:0;transform:translateY(-8px);transition:opacity 2.2s ease 1.2s,transform 2.2s ease 1.2s}
+body.risen header{opacity:1;transform:none}
+#greet{font-size:15px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-dim)}
+#date{font-size:13px;letter-spacing:.08em;color:var(--fg-faint)}
+
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:0 4px;position:relative}
+
+/* ---------- Breathing (4-4-4-4 box, bowl-synced) ---------- */
+#breathWrap{display:none;flex-direction:column;align-items:center;gap:26px}
+body.breathing #breathWrap{display:flex}
+body.breathing #affWrap{display:none}
+#sphere{
+  width:34vmin;height:34vmin;max-width:210px;max-height:210px;border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,rgba(255,246,232,.95) 0%,rgba(255,216,154,.85) 34%,rgba(224,116,95,.55) 72%,rgba(122,75,127,.25) 100%);
+  box-shadow:0 0 60px 18px rgba(255,183,110,.30),inset 0 0 40px rgba(255,246,232,.35);
+  transform:scale(.55);
+  transition:transform 4s cubic-bezier(.45,0,.55,1);
+  will-change:transform;
+}
+#sphere.full{transform:scale(1)}
+#sphere.empty{transform:scale(.55)}
+#breathLabel{font-family:'Young Serif',Georgia,serif;font-size:clamp(20px,5.4vw,28px);min-height:1.3em;color:var(--fg);text-shadow:var(--txt-shadow)}
+#breathAff{font-family:'Young Serif',Georgia,serif;font-size:clamp(16px,4.6vw,22px);line-height:1.35;
+  max-width:26ch;text-wrap:balance;color:var(--fg-dim);text-shadow:var(--txt-shadow)}
+#breathCount{font-size:13px;letter-spacing:.24em;color:var(--fg-dim);text-transform:uppercase;font-weight:700}
+#breathDots{display:flex;gap:10px}
+#breathDots i{width:8px;height:8px;border-radius:50%;background:var(--btn-border)}
+#breathDots i.done{background:var(--accent)}
+#skipBreath{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-ghost);padding:10px 18px}
+
+/* ---------- Affirmation ---------- */
+#affWrap{display:flex;flex-direction:column;align-items:center;gap:22px}
+#affirmation{
+  font-family:'Young Serif',Georgia,serif;
+  font-size:clamp(30px,8.4vw,52px);
+  line-height:1.22;max-width:22ch;text-wrap:balance;
+  color:var(--fg);text-shadow:var(--txt-shadow);
+}
+#affirmation .w{display:inline-block;opacity:0;transform:translateY(14px);filter:blur(4px)}
+#affirmation .w.on{opacity:1;transform:none;filter:none;
+  transition:opacity .9s ease,transform .9s ease,filter .9s ease}
+#srcTag{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-ghost);min-height:14px}
+#saveBtn{
+  font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:10px 22px;border-radius:999px;border:1px solid var(--btn-border);
+  color:var(--fg-dim);backdrop-filter:blur(4px);
+}
+#saveBtn.saved{border-color:var(--accent);color:var(--accent)}
+
+footer{display:flex;flex-direction:column;gap:12px;align-items:center;
+  opacity:0;transition:opacity 2.4s ease 1s}
+body.risen footer{opacity:1}
+#streak{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);font-weight:700}
+#streak b{color:var(--accent)}
+#hint{font-size:12px;letter-spacing:.1em;color:var(--fg-ghost)}
+#footRow{display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center}
+#savedBtn,#soundBtn,#sceneBtn{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);padding:6px 10px}
+#ver{font-size:10px;letter-spacing:.08em;color:var(--fg-ghost);opacity:.6}
+
+body.swap #affirmation{animation:swapA 1s ease}
+@keyframes swapA{0%{opacity:1}30%{opacity:0;transform:scale(.985)}70%{opacity:0}100%{opacity:1;transform:none}}
+
+/* ---------- Saved drawer ---------- */
+#drawer{
+  position:fixed;inset:0;z-index:10;display:none;flex-direction:column;
+  background:rgba(10,12,31,.92);backdrop-filter:blur(10px);color:var(--ivory);
+  padding:calc(env(safe-area-inset-top,0px) + 24px) 22px calc(env(safe-area-inset-bottom,0px) + 24px);
+}
+#drawer.open{display:flex}
+#drawerHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+#drawerHead h2{font-family:'Young Serif',Georgia,serif;font-size:22px;font-weight:400}
+#closeDrawer{font-size:26px;line-height:1;padding:6px 12px;color:var(--ivory-dim)}
+#savedList{overflow-y:auto;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.savedItem{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  background:rgba(255,246,232,.06);border:1px solid rgba(255,246,232,.10);
+  border-radius:14px;padding:14px 16px;text-align:left;
+}
+.savedItem span{font-family:'Young Serif',Georgia,serif;font-size:17px;line-height:1.35;flex:1}
+.savedItem .rm{font-size:18px;color:rgba(255,246,232,.4);padding:4px 8px}
+#savedEmpty{color:var(--ivory-dim);font-size:15px;text-align:center;margin-top:40px;line-height:1.6}
+
+@media (prefers-reduced-motion:reduce){
+  #sky .layer,#stars,header,footer{transition:none!important}
+  #scene{transition:none!important}
+  .sunDisc{transition:none!important}
+  .star,.cloud,.flake,.stalk,.leafTuft,.tree,.ripple{animation:none!important}
+  #affirmation .w{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}
+  body.swap #affirmation{animation:none}
+  #sphere{transition:transform .3s ease}
+}
+</style>
+</head>
+<body>
+
+<div id="sky">
+  <div class="layer sceneSky" id="sceneSky"></div>
+  <div id="scene"></div>
+  <div class="layer night"></div>
+  <div id="stars"></div>
+</div>
+
+<div id="stage">
+  <header>
+    <div id="greet">Good morning</div>
+    <div id="date"></div>
+  </header>
+
+  <main>
+    <div id="breathWrap">
+      <div id="breathCount">Box breathing · 4·4·4·4</div>
+      <div id="sphere"></div>
+      <div id="breathLabel">Breathe in</div>
+      <div id="breathAff"></div>
+      <div id="breathDots"><i></i><i></i><i></i></div>
+      <button id="skipBreath">Skip</button>
+    </div>
+    <div id="affWrap">
+      <h1 id="affirmation" aria-live="polite"></h1>
+      <div id="srcTag"></div>
+      <button id="saveBtn">☆ Save</button>
+    </div>
+  </main>
+
+  <footer>
+    <div id="streak"></div>
+    <div id="footRow">
+      <button id="savedBtn">★ Saved</button>
+      <button id="soundBtn">🔔 Breathe</button>
+      <button id="sceneBtn">◐ Scene</button>
+    </div>
+    <div id="hint">tap anywhere for another</div>
+    <div id="ver">v2026:07:03-15:00</div>
+  </footer>
+</div>
+
+<div id="drawer">
+  <div id="drawerHead">
+    <h2>Saved lines</h2>
+    <button id="closeDrawer">×</button>
+  </div>
+  <div id="savedList"></div>
+</div>
+
+<script>
+/* ======================================================================
+   Affirmation library — 100 lines, 20 per framework.
+   f: NLP | CBT | Stoic | Mindfulness | Buddhist
+   ====================================================================== */
+const LINES = [
+/* ---- Stoic (dichotomy of control, amor fati, virtue) ---- */
+{t:"I control my response. That is enough.",f:"Stoic"},
+{t:"The obstacle is the way.",f:"Stoic"},
+{t:"I need less than I fear.",f:"Stoic"},
+{t:"What happens is raw material. I shape it.",f:"Stoic"},
+{t:"I was made for this weather.",f:"Stoic"},
+{t:"Fortune lends; I hold lightly.",f:"Stoic"},
+{t:"My judgment, not the event, disturbs me.",f:"Stoic"},
+{t:"I choose my judgments. I choose peace.",f:"Stoic"},
+{t:"Difficulty introduces me to myself.",f:"Stoic"},
+{t:"I act well. Outcomes follow their nature.",f:"Stoic"},
+{t:"This too is within my power to bear.",f:"Stoic"},
+{t:"I am rehearsed for hard mornings.",f:"Stoic"},
+{t:"Do the day's work. That is victory.",f:"Stoic"},
+{t:"I waste no strength on what I can't control.",f:"Stoic"},
+{t:"Calm is a decision I renew.",f:"Stoic"},
+{t:"I meet fate as a partner, not an enemy.",f:"Stoic"},
+{t:"Character is my only true property.",f:"Stoic"},
+{t:"I can endure this hour. Then the next.",f:"Stoic"},
+{t:"Virtue now. Everything else, later.",f:"Stoic"},
+{t:"Today I practice, not perfect, virtue.",f:"Stoic"},
+/* ---- CBT (reframing, evidence, behavior-first) ---- */
+{t:"Feelings are visitors, not verdicts.",f:"CBT"},
+{t:"Thoughts are hypotheses. I test them.",f:"CBT"},
+{t:"I look for evidence, not echoes of fear.",f:"CBT"},
+{t:"One setback is data, not destiny.",f:"CBT"},
+{t:"'Always' and 'never' are rarely true.",f:"CBT"},
+{t:"I can act before I feel ready.",f:"CBT"},
+{t:"This thought is a story. I can edit it.",f:"CBT"},
+{t:"Anxiety predicts. It doesn't know.",f:"CBT"},
+{t:"I did hard things before. That's evidence.",f:"CBT"},
+{t:"Small action beats perfect analysis.",f:"CBT"},
+{t:"I replace 'what if' with 'what's next'.",f:"CBT"},
+{t:"Discomfort is not danger.",f:"CBT"},
+{t:"I rate the problem, not myself.",f:"CBT"},
+{t:"Behavior first. Mood follows.",f:"CBT"},
+{t:"Catastrophes shrink when written down.",f:"CBT"},
+{t:"I question the thought, not my worth.",f:"CBT"},
+{t:"Progress counts even when it's quiet.",f:"CBT"},
+{t:"Today I gather evidence of my competence.",f:"CBT"},
+{t:"A bad moment is not a bad life.",f:"CBT"},
+{t:"My worst case is survivable. My best case is buildable.",f:"CBT"},
+/* ---- NLP (agency language, reframes, state control) ---- */
+{t:"I haven't mastered it — yet.",f:"NLP"},
+{t:"Every response I make is a choice.",f:"NLP"},
+{t:"I anchor calm with one deep breath.",f:"NLP"},
+{t:"I run my mind; it doesn't run me.",f:"NLP"},
+{t:"There is no failure, only feedback.",f:"NLP"},
+{t:"I frame this day as an experiment.",f:"NLP"},
+{t:"My words shape my world. I choose them.",f:"NLP"},
+{t:"I step into my most resourceful self.",f:"NLP"},
+{t:"The meaning I give it is mine to give.",f:"NLP"},
+{t:"I rehearse success before I open the door.",f:"NLP"},
+{t:"Flexible beats forceful.",f:"NLP"},
+{t:"I set the outcome, then find the path.",f:"NLP"},
+{t:"Energy flows where my focus goes.",f:"NLP"},
+{t:"I switch the picture: bright, close, possible.",f:"NLP"},
+{t:"If one way fails, I have more maps.",f:"NLP"},
+{t:"I speak to myself in the voice of a coach.",f:"NLP"},
+{t:"Possibility is a direction I face.",f:"NLP"},
+{t:"I act as if — until it is.",f:"NLP"},
+{t:"Each morning I install a better pattern.",f:"NLP"},
+{t:"My state is a dial. My hand is on it.",f:"NLP"},
+/* ---- Mindfulness & Self-Compassion ---- */
+{t:"I am here. This breath is enough.",f:"Mindfulness"},
+{t:"I meet myself with kindness first.",f:"Mindfulness"},
+{t:"May I be gentle with my own becoming.",f:"Mindfulness"},
+{t:"Right now, in this breath, I am safe.",f:"Mindfulness"},
+{t:"I notice, I allow, I soften.",f:"Mindfulness"},
+{t:"Struggle is human. I am not alone in it.",f:"Mindfulness"},
+{t:"I hold my flaws the way a friend would.",f:"Mindfulness"},
+{t:"One moment, fully lived, is a good start.",f:"Mindfulness"},
+{t:"I don't need to fix this breath. Just feel it.",f:"Mindfulness"},
+{t:"Kindness to myself is fuel, not indulgence.",f:"Mindfulness"},
+{t:"I begin again, without the scolding.",f:"Mindfulness"},
+{t:"This morning asks only for my presence.",f:"Mindfulness"},
+{t:"I let the noise settle like sand in water.",f:"Mindfulness"},
+{t:"I am allowed to be a work in progress.",f:"Mindfulness"},
+{t:"Soft heart, steady attention.",f:"Mindfulness"},
+{t:"I greet my body with thanks, not critique.",f:"Mindfulness"},
+{t:"Where my feet are — that is where I live.",f:"Mindfulness"},
+{t:"I make room for the feeling, then move.",f:"Mindfulness"},
+{t:"May I give myself the patience I give others.",f:"Mindfulness"},
+{t:"Attention is the kindest gift I own.",f:"Mindfulness"},
+/* ---- Buddhist (impermanence, non-attachment, equanimity) ---- */
+{t:"This too will change. I can rest in that.",f:"Buddhist"},
+{t:"I hold gently; everything is passing through.",f:"Buddhist"},
+{t:"Beginner's mind: today is unwritten.",f:"Buddhist"},
+{t:"The mud feeds the lotus.",f:"Buddhist"},
+{t:"I water seeds of joy, not fear.",f:"Buddhist"},
+{t:"Craving less, I carry less.",f:"Buddhist"},
+{t:"Each breath is a small liberation.",f:"Buddhist"},
+{t:"Equanimity: I am the sky, not the weather.",f:"Buddhist"},
+{t:"I bow to this morning as it is.",f:"Buddhist"},
+{t:"Peace is every step.",f:"Buddhist"},
+{t:"Anger is a coal; I set it down.",f:"Buddhist"},
+{t:"Impermanence makes every sunrise precious.",f:"Buddhist"},
+{t:"I practice loving-kindness, starting with me.",f:"Buddhist"},
+{t:"Let come what comes; let go what goes.",f:"Buddhist"},
+{t:"The present moment is my true home.",f:"Buddhist"},
+{t:"Nothing to chase; everything to notice.",f:"Buddhist"},
+{t:"May all beings be well — me included.",f:"Buddhist"},
+{t:"Suffering eases when grasping loosens.",f:"Buddhist"},
+{t:"I am the observer of the storm, not the storm.",f:"Buddhist"},
+{t:"One mindful step is the whole path.",f:"Buddhist"},
+];
+
+const AI_ENDPOINT = "https://ckyshjxznltdkxfvhfdy.supabase.co/functions/v1/first-light?n=20";
+
+const $=id=>document.getElementById(id);
+const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+const today=new Date();
+const dayKey=today.toISOString().slice(0,10);
+function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+const rand=(a,b)=>a+Math.random()*(b-a);
+
+/* ======================================================================
+   SCENE ENGINE — rendition follows the affirmation's meaning.
+   Physics notes: distant clouds render smaller/lower/slower (parallax);
+   larger snowflakes fall faster with less lateral drift; trees and bamboo
+   sway ±1° from the base with tapered trunks/stalks.
+   ====================================================================== */
+function el(parent,cls,styles){const d=document.createElement('div');d.className=cls;Object.assign(d.style,styles||{});parent.appendChild(d);return d;}
+
+const SCENES=[
+{ id:'sunrise', name:'Sunrise', light:false, stars:true,
+  kw:['rise','sun','morning','dawn','begin','light','today','new','awake','start','install','door'],
+  sky:'linear-gradient(180deg,#141239 0%,#2e2a5e 38%,#7a4b7f 64%,#e0745f 84%,#ffc178 100%)',
+  build(c){ el(c,'hazeBand'); el(c,'sunDisc'); } },
+
+{ id:'sunset', name:'Sunset', light:false, stars:true,
+  kw:['let go','release','rest','set it down','later','enough','evening','close','carry less','loosen'],
+  sky:'linear-gradient(180deg,#2a1533 0%,#5a2244 40%,#a83d46 68%,#e0563e 84%,#ffb35c 100%)',
+  build(c){ el(c,'hazeBand setting'); el(c,'sunDisc setting');
+    for(let i=0;i<2;i++) el(c,'cloud dim',{top:rand(30,45)+'vh','--sc':rand(.5,.7),'--dur':rand(150,220)+'s','--delay':(-rand(0,150))+'s',opacity:.25}); } },
+
+{ id:'lake', name:'Tranquil lake', light:false, stars:true,
+  kw:['calm','still','peace','water','wave','storm','ripple','reflect','settle','sand','observer','equanim','quiet'],
+  sky:'linear-gradient(180deg,#171a3d 0%,#33305e 40%,#6a4a72 58%,#3a2f57 58%,#141227 100%)',
+  build(c){ el(c,'moonDisc'); el(c,'water'); el(c,'moonGlow');
+    for(let i=0;i<5;i++) el(c,'ripple',{top:(62+i*6)+'vh',width:rand(18,46)+'vmin','--dur':rand(6,10)+'s','--delay':(-rand(0,8))+'s'}); } },
+
+{ id:'clouds', name:'Passing clouds', light:true, stars:false,
+  kw:['cloud','pass','visitor','change','impermanen','weather','sky','drift','thought','story','moment','through'],
+  sky:'linear-gradient(180deg,#7fa8d9 0%,#a8c4e4 55%,#cfe0f2 100%)',
+  build(c){
+    /* parallax: near = large/high/faster; far = small/lower/slower */
+    for(let i=0;i<3;i++) el(c,'cloud',{top:rand(5,24)+'vh','--sc':rand(1,1.5),'--dur':rand(70,110)+'s','--delay':(-rand(0,90))+'s'});
+    for(let i=0;i<3;i++) el(c,'cloud dim',{top:rand(30,55)+'vh','--sc':rand(.45,.7),'--dur':rand(150,220)+'s','--delay':(-rand(0,180))+'s'}); } },
+
+{ id:'snow', name:'Winter snow', light:true, stars:false, months:[11,0,1],
+  kw:['winter','snow','cold','silence'],
+  sky:'linear-gradient(180deg,#33415e 0%,#8fa3c0 55%,#dfe8f2 100%)',
+  build(c){ el(c,'snowGround');
+    for(let i=0;i<46;i++){
+      const sz=rand(2.5,5.5);
+      /* physics: larger flakes fall faster, drift less */
+      const dur=(18-sz*2).toFixed(1)+'s';
+      const drift=rand(-1,1)*(7-sz)+'vw';
+      el(c,'flake',{'--x':rand(0,100)+'vw','--sz':sz+'px','--dur':dur,'--delay':(-rand(0,14))+'s','--drift':drift});
+    } } },
+
+{ id:'bamboo', name:'Bamboo forest', light:false, stars:false,
+  kw:['bend','flexib','patien','resilien','yield','discipline','practice','grow','endure','forceful','maps'],
+  sky:'linear-gradient(180deg,#17301f 0%,#2f5c3a 55%,#6f9e6b 100%)',
+  build(c){
+    for(let i=0;i<4;i++) el(c,'stalk back',{left:rand(2,94)+'vw',width:rand(1.6,2.4)+'vmin',height:rand(60,90)+'vh','--dur':rand(6,9)+'s','--delay':(-rand(0,6))+'s'});
+    for(let i=0;i<5;i++){ const x=6+i*20+rand(-4,4);
+      el(c,'stalk',{left:x+'vw',width:rand(2,3)+'vmin',height:rand(70,100)+'vh','--dur':rand(6,9)+'s','--delay':(-rand(0,6))+'s'});
+      el(c,'leafTuft',{left:(x+rand(-2,3))+'vw',top:rand(4,26)+'vh','--dur':rand(5,8)+'s','--delay':(-rand(0,5))+'s'}); } } },
+
+{ id:'breeze', name:'Gentle breeze', light:false, stars:false,
+  kw:['root','tree','ground','stand','stead','unshaken','feet','step','path','walk','home','anchor','character'],
+  sky:'linear-gradient(180deg,#1c2b3a 0%,#3f5c6e 45%,#8fa8a0 78%,#cdd9c9 100%)',
+  build(c){ el(c,'ground');
+    const mk=(x,scale,back)=>{ const t=el(c,'tree'+(back?' back':''),{left:x+'vw',bottom:'12vh',width:'16vmin',height:'27vmin','--sc':scale,'--dur':rand(8,11)+'s','--delay':(-rand(0,8))+'s'});
+      el(t,'trunk');
+      /* crown: overlapping ellipses, largest center-top, sides lower (natural silhouette) */
+      el(t,'canopy',{left:'20%',bottom:'11vmin',width:'11vmin',height:'9.5vmin'});
+      el(t,'canopy',{left:'-2%',bottom:'8.5vmin',width:'8.5vmin',height:'7vmin',opacity:.92});
+      el(t,'canopy',{left:'46%',bottom:'8.8vmin',width:'8.5vmin',height:'6.8vmin',opacity:.92});
+      el(t,'canopy',{left:'28%',bottom:'14.5vmin',width:'7vmin',height:'5.5vmin',opacity:.95}); };
+    mk(4,.7,true); mk(72,.8,true); mk(18,1,false); mk(58,1.15,false); } },
+];
+
+let currentScene=null;
+function eligibleScenes(){ const m=today.getMonth(); return SCENES.filter(s=>!s.months||s.months.includes(m)); }
+function applyScene(s,fade){
+  if(!s||s===currentScene)return;
+  currentScene=s;
+  const doSwap=()=>{
+    $('sceneSky').style.background=s.sky;
+    const c=$('scene'); c.innerHTML=''; s.build(c);
+    document.body.classList.toggle('lightScene',!!s.light);
+    $('stars').style.display=s.stars?'':'none';
+    $('sceneBtn').textContent='◐ '+s.name;
+  };
+  if(fade && !reduced() && document.body.classList.contains('risen')){
+    const els=[$('scene'),$('sceneSky')];
+    els.forEach(e=>{e.style.transition='opacity .8s ease';e.style.opacity=0;});
+    setTimeout(()=>{doSwap();els.forEach(e=>{e.style.opacity=1;});},850);
+  }else doSwap();
+}
+function dailyScene(){ const list=eligibleScenes(); return list[hashStr(dayKey+'|scene')%list.length]; }
+/* Rendition follows the affirmation. Two-pass match:
+   pass 1 = literal scene nouns (highest priority), pass 2 = metaphor keywords. */
+const STRONG={sunset:['sunset','dusk'],sunrise:['sunrise','dawn'],lake:['lake','water','moon'],
+  clouds:['cloud'],snow:['snow','winter'],bamboo:['bamboo'],breeze:['tree','forest','breeze','wind']};
+function sceneForLine(text){
+  const lo=(text||'').toLowerCase();
+  const hit=k=> k.includes(' ') ? lo.includes(k) : new RegExp('\\b'+k).test(lo);
+  for(const s of eligibleScenes()){ if((STRONG[s.id]||[]).some(hit)) return s; }
+  for(const s of eligibleScenes()){ if(s.kw && s.kw.some(hit)) return s; }
+  return null;
+}
+function matchSceneToLine(text,fade){ const s=sceneForLine(text); if(s) applyScene(s,fade); }
+function shuffleScene(){
+  const list=eligibleScenes().filter(s=>s!==currentScene);
+  applyScene(list[Math.floor(Math.random()*list.length)],true);
+}
+$('sceneBtn').addEventListener('click',e=>{e.stopPropagation();shuffleScene();});
+
+/* ======================================================================
+   Affirmations — AI batch (framework-tagged) with silent library fallback
+   ====================================================================== */
+let aiLines=[];            // [{t,f}]
+let pool=LINES.slice();
+let current={t:"",f:""};
+let currentIsAI=false;
+const normLine=x=> typeof x==='string' ? {t:x.trim(),f:''} :
+  (x && typeof x==='object') ? {t:String(x.t||x.text||'').trim(),f:String(x.f||x.framework||'').trim()} : null;
+function rebuildPool(){ pool = aiLines.length ? aiLines.concat(LINES) : LINES.slice(); }
+async function loadAI(){
+  try{
+    const cached=JSON.parse(localStorage.getItem('fl_ai2')||'null');
+    if(cached && cached.date===dayKey && Array.isArray(cached.lines) && cached.lines.length){
+      aiLines=cached.lines.map(normLine).filter(x=>x&&x.t); rebuildPool(); refreshDailyIfAI(); return;
+    }
+  }catch(e){}
+  try{
+    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),9000);
+    const r=await fetch(AI_ENDPOINT,{signal:ctrl.signal});
+    clearTimeout(t);
+    const d=await r.json();
+    if(r.ok && Array.isArray(d.lines) && d.lines.length){
+      aiLines=d.lines.map(normLine).filter(x=>x&&x.t&&x.t.length>=8&&x.t.length<=90);
+      if(aiLines.length){
+        try{localStorage.setItem('fl_ai2',JSON.stringify({date:dayKey,lines:aiLines}))}catch(e){}
+        rebuildPool(); refreshDailyIfAI();
+      }
+    }
+  }catch(e){ /* offline or no key yet — library covers it */ }
+}
+let userTapped=false;
+function refreshDailyIfAI(){
+  if(userTapped || !aiLines.length) return;
+  setDaily();
+  if(document.body.classList.contains('breathing')){ $('breathAff').textContent=current.t; return; }
+  renderWords();
+}
+function setDaily(){
+  if(aiLines.length){ current=aiLines[hashStr(dayKey)%aiLines.length]; currentIsAI=true; }
+  else{ current=LINES[hashStr(dayKey)%LINES.length]; currentIsAI=false; }
+}
+
+/* ================= Affirmation rendering ================= */
+function renderWords(){
+  const el2=$('affirmation');
+  el2.innerHTML='';
+  const ws=current.t.split(' ');
+  ws.forEach((w,i)=>{
+    const s=document.createElement('span');
+    s.className='w';s.textContent=w;
+    el2.appendChild(s);
+    if(i<ws.length-1)el2.appendChild(document.createTextNode(' '));
+  });
+  [...el2.querySelectorAll('.w')].forEach((s,i)=>setTimeout(()=>s.classList.add('on'),reduced()?0:400+i*240));
+  $('srcTag').textContent = [current.f, currentIsAI?'✨ fresh today':''].filter(Boolean).join(' · ');
+  updateSaveBtn();
+}
+function nextLine(){
+  userTapped=true;
+  let n,tries=0;
+  do{ n=Math.floor(Math.random()*pool.length); tries++; }while(pool[n].t===current.t && tries<10);
+  current=pool[n];
+  currentIsAI = aiLines.some(x=>x.t===current.t);
+  matchSceneToLine(current.t,true);
+  document.body.classList.remove('swap');void document.body.offsetWidth;
+  document.body.classList.add('swap');
+  setTimeout(()=>renderWords(), reduced()?0:320);
+}
+
+/* ================= Bookmarks (stored as plain text — v2/v3 compatible) ===== */
+function getSaved(){ try{return JSON.parse(localStorage.getItem('fl_saved'))||[]}catch(e){return []} }
+function setSaved(a){ try{localStorage.setItem('fl_saved',JSON.stringify(a))}catch(e){} }
+function updateSaveBtn(){
+  const saved=getSaved().includes(current.t);
+  const b=$('saveBtn');
+  b.textContent = saved ? '★ Saved' : '☆ Save';
+  b.classList.toggle('saved',saved);
+}
+$('saveBtn').addEventListener('click',e=>{
+  e.stopPropagation();
+  let a=getSaved();
+  if(a.includes(current.t)) a=a.filter(x=>x!==current.t);
+  else a.unshift(current.t);
+  setSaved(a); updateSaveBtn(); renderDrawer();
+});
+function frameworkOf(text){
+  const hit=pool.find(x=>x.t===text)||LINES.find(x=>x.t===text);
+  return hit?hit.f:'';
+}
+function renderDrawer(){
+  const list=$('savedList'); list.innerHTML='';
+  const a=getSaved();
+  if(!a.length){
+    const d=document.createElement('div');d.id='savedEmpty';
+    d.textContent='Nothing saved yet. Tap ☆ Save under any line that lands.';
+    list.appendChild(d);return;
+  }
+  a.forEach(line=>{
+    const row=document.createElement('div');row.className='savedItem';
+    const sp=document.createElement('span');sp.textContent=line;
+    sp.addEventListener('click',()=>{ current={t:line,f:frameworkOf(line)}; currentIsAI=aiLines.some(x=>x.t===line); userTapped=true; closeDrawer(); matchSceneToLine(line,true); renderWords(); });
+    const rm=document.createElement('button');rm.className='rm';rm.textContent='×';
+    rm.addEventListener('click',ev=>{ev.stopPropagation(); setSaved(getSaved().filter(x=>x!==line)); renderDrawer(); updateSaveBtn();});
+    row.appendChild(sp);row.appendChild(rm);
+    list.appendChild(row);
+  });
+}
+function closeDrawer(){ $('drawer').classList.remove('open'); }
+$('savedBtn').addEventListener('click',e=>{e.stopPropagation();renderDrawer();$('drawer').classList.add('open');});
+$('closeDrawer').addEventListener('click',e=>{e.stopPropagation();closeDrawer();});
+
+/* ================= Singing bowl (Web Audio synthesis) ================= */
+let actx=null;
+window.__bowlTries=0;   // test instrumentation: counts strike attempts
+function ensureCtx(){
+  if(!actx){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC)return null; actx=new AC(); }
+  if(actx.state==='suspended') actx.resume().catch(()=>{});
+  return actx;
+}
+function strikeBowl(gainScale=1,f0=110){
+  window.__bowlTries++;
+  const ctx=ensureCtx(); if(!ctx||ctx.state!=='running')return false;
+  const now=ctx.currentTime;
+  const master=ctx.createGain();
+  master.gain.value=0.0001;
+  master.connect(ctx.destination);
+  master.gain.setValueAtTime(0.0001,now);
+  master.gain.exponentialRampToValueAtTime(0.5*gainScale,now+0.025);
+  master.gain.exponentialRampToValueAtTime(0.0001,now+11);
+  const partials=[
+    {r:1.00,g:1.00,beat:0.7},
+    {r:2.72,g:0.42,beat:1.1},
+    {r:5.42,g:0.16,beat:1.6},
+    {r:8.35,g:0.05,beat:2.2},
+  ];
+  partials.forEach(p=>{
+    [ -p.beat/2, p.beat/2 ].forEach(det=>{
+      const o=ctx.createOscillator();
+      o.type='sine';
+      o.frequency.value=f0*p.r+det;
+      const g=ctx.createGain();
+      g.gain.setValueAtTime(p.g*0.5,now);
+      g.gain.exponentialRampToValueAtTime(0.0001,now+11/(1+p.r*0.35));
+      o.connect(g);g.connect(master);
+      o.start(now);o.stop(now+11.5);
+    });
+  });
+  return true;
+}
+let bowlDone=false;
+function tryBowl(){ if(bowlDone)return; if(strikeBowl())bowlDone=true; }
+
+/* ================= Box breathing — 4·4·4·4, bowl-synced ================= */
+/* Bowl rhythm aligned with the box: a strike marks every 4-second phase.
+   Inhale = full strike, holds = soft tick, exhale = slightly deeper strike. */
+const PHASES=[
+  {label:'Breathe in', cls:'full',  sec:4, gain:0.50, f0:110},
+  {label:'Hold',       cls:'full',  sec:4, gain:0.12, f0:110},
+  {label:'Breathe out',cls:'empty', sec:4, gain:0.38, f0:98},
+  {label:'Hold',       cls:'empty', sec:4, gain:0.12, f0:98},
+];
+const CYCLES=3;
+let breathTimer=null, breathing=false;
+function startBreathing(){
+  if(breathing)return;
+  breathing=true;
+  document.body.classList.add('breathing');
+  $('breathAff').textContent=current.t;   // daily affirmation shown while breathing
+  const dots=[...document.querySelectorAll('#breathDots i')];
+  dots.forEach(d=>d.classList.remove('done'));
+  let cycle=0, phase=0;
+  const sphere=$('sphere'), label=$('breathLabel');
+  function step(){
+    if(!breathing)return;
+    if(phase===0 && cycle>0) dots[cycle-1].classList.add('done');
+    if(cycle>=CYCLES){ dots[CYCLES-1].classList.add('done'); return endBreathing(); }
+    const p=PHASES[phase];
+    label.textContent=p.label;
+    strikeBowl(p.gain,p.f0);              // rhythm aligned with the box
+    sphere.classList.remove('full','empty');
+    void sphere.offsetWidth;
+    sphere.classList.add(p.cls);
+    phase++;
+    if(phase>=PHASES.length){phase=0;cycle++;}
+    breathTimer=setTimeout(step,p.sec*1000);
+  }
+  step();
+}
+function endBreathing(){
+  if(!breathing)return;
+  breathing=false;
+  clearTimeout(breathTimer);
+  document.body.classList.remove('breathing');
+  strikeBowl(0.30);
+  renderWords();
+}
+$('skipBreath').addEventListener('click',e=>{e.stopPropagation();endBreathing();});
+/* 🔔 starts a bowl-guided breathing round; if already breathing, just ring once */
+$('soundBtn').addEventListener('click',e=>{
+  e.stopPropagation();ensureCtx();
+  if(breathing){strikeBowl();return;}
+  startBreathing();
+});
+
+/* ================= Greeting, date, streak, stars ================= */
+const h=today.getHours();
+$('greet').textContent = h<5?'You\u2019re up early':h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+$('date').textContent = today.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+
+(function streak(){
+  let s={last:null,count:0};
+  try{s=JSON.parse(localStorage.getItem('fl_streak'))||s}catch(e){}
+  if(s.last!==dayKey){
+    const y=new Date(today);y.setDate(y.getDate()-1);
+    const yKey=y.toISOString().slice(0,10);
+    s.count=(s.last===yKey)?s.count+1:1;
+    s.last=dayKey;
+    try{localStorage.setItem('fl_streak',JSON.stringify(s))}catch(e){}
+  }
+  $('streak').innerHTML = s.count>1
+    ? `\u2600\ufe0e <b>${s.count} mornings</b> in a row`
+    : '\u2600\ufe0e Day <b>1</b> — welcome back tomorrow';
+})();
+
+(function stars(){
+  const box=$('stars');
+  for(let i=0;i<40;i++){
+    const st=document.createElement('div');st.className='star';
+    st.style.left=Math.random()*100+'%';
+    st.style.top=Math.random()*60+'%';
+    st.style.animationDelay=(Math.random()*3)+'s';
+    st.style.opacity=.2+Math.random()*.7;
+    box.appendChild(st);
+  }
+})();
+
+/* ================= Boot ================= */
+setDaily();
+applyScene(sceneForLine(current.t) || dailyScene());  // rendition follows the daily line
+loadAI();
+requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.add('risen')));
+tryBowl();
+startBreathing();
+
+/* test hooks */
+window.__fl={
+  applySceneById:id=>{const s=SCENES.find(x=>x.id===id);if(s)applyScene(s);},
+  scenes:SCENES.map(s=>s.id),
+  current:()=>currentScene&&currentScene.id,
+  forceLine:t=>{current={t,f:frameworkOf(t)};currentIsAI=false;userTapped=true;matchSceneToLine(t,false);renderWords();},
+  sceneFor:t=>{const s=sceneForLine(t);return s?s.id:null},
+  line:()=>current,
+};
+
+document.addEventListener('pointerdown',e=>{
+  tryBowl();
+  if(e.target.closest('button'))return;
+  if(e.target.closest('#drawer'))return;
+  if(document.body.classList.contains('breathing'))return;
+  nextLine();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeDrawer();
+  if((e.key===' '||e.key==='Enter') && !breathing && !$('drawer').classList.contains('open'))nextLine();
+});
+
+if('serviceWorker' in navigator){
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
