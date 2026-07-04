@@ -1,5 +1,5 @@
 /* First Light service worker — offline-first app shell */
-const CACHE = 'first-light-v11';
+const CACHE = 'first-light-v12';
 const SHELL = [
   './',
   './index.html',

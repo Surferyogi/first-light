@@ -216,7 +216,9 @@ body.breathing #affWrap{display:none}
 #breathDots{display:flex;gap:10px}
 #breathDots i{width:10px;height:10px;border-radius:50%;background:transparent;border:2px solid var(--btn-border)}
 #breathDots i.done{background:var(--accent);border-color:var(--accent)}
-#skipBreath{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-ghost);padding:10px 18px}
+#skipBreath{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);padding:12px 22px;
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(env(safe-area-inset-bottom,0px) + 118px);z-index:5}
 
 /* ---------- Affirmation ---------- */
 #affWrap{display:flex;flex-direction:column;align-items:center;gap:22px}
@@ -331,9 +333,9 @@ body.swap #affirmation{animation:swapA 1s ease, floatDrift 9s ease-in-out infini
     <div id="footRow">
       <button id="savedBtn">★ Saved</button>
       <button id="soundBtn">🔔 Breathe</button>
-      <div id="sceneName">◐ Scene</div>
     </div>
-    <div id="ver">v2026:07:04-15:45</div>
+    <div id="sceneName">◐ Scene</div>
+    <div id="ver">v2026:07:04-16:00</div>
   </footer>
 </div>
 
@@ -855,6 +857,21 @@ function strikeBowl(gainScale=1,f0=110){
   });
   return true;
 }
+window.__tickTries=0;   // test instrumentation
+/* short, quiet tick marking the start of counts 3, 2, 1 (count 4 = full phase strike) */
+function tickBowl(){
+  window.__tickTries++;
+  const ctx=ensureCtx(); if(!ctx||ctx.state!=='running')return false;
+  const now=ctx.currentTime;
+  const g=ctx.createGain();
+  g.gain.setValueAtTime(0.0001,now);
+  g.gain.exponentialRampToValueAtTime(0.07,now+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,now+0.5);
+  g.connect(ctx.destination);
+  [220,596].forEach(f=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f;
+    o.connect(g); o.start(now); o.stop(now+0.55); });
+  return true;
+}
 let bowlDone=false;
 function tryBowl(){ if(bowlDone)return; if(strikeBowl())bowlDone=true; }
 
@@ -874,7 +891,7 @@ function startTick(sec){
   let n=sec;
   const num=$('sphereNum');
   num.textContent=n;
-  tickTimer=setInterval(()=>{ n--; if(n<1){clearInterval(tickTimer);return;} num.textContent=n; },1000);
+  tickTimer=setInterval(()=>{ n--; if(n<1){clearInterval(tickTimer);return;} num.textContent=n; tickBowl(); },1000);
 }
 function startBreathing(){
   if(breathing)return;
@@ -911,10 +928,11 @@ function endBreathing(){
   renderWords();
 }
 $('skipBreath').addEventListener('click',e=>{e.stopPropagation();endBreathing();});
-/* 🔔 starts a bowl-guided breathing round; if already breathing, just ring once */
+/* 🔔 always (re)starts the round from count one, fully sounded — full strike on
+   each phase start (count 4), soft ticks on 3-2-1. iOS unblocks audio on this tap. */
 $('soundBtn').addEventListener('click',e=>{
   e.stopPropagation();ensureCtx();
-  if(breathing){strikeBowl();return;}
+  if(breathing){ breathing=false; clearTimeout(breathTimer); clearInterval(tickTimer); }
   startBreathing();
 });
 
