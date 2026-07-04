@@ -62,7 +62,7 @@ body.risen #scene{opacity:1}
   transform:translateX(-50%) scaleY(.92);border-radius:50%;filter:blur(1px);
   background:radial-gradient(circle at 50% 40%,#fff3d6 0%,#ffd89a 45%,#ffb066 78%,rgba(255,176,102,0) 100%);
   box-shadow:0 0 18vmin 6vmin rgba(255,183,110,.35),0 0 42vmin 14vmin rgba(224,116,95,.22);
-  transition:transform 8s cubic-bezier(.22,.8,.36,1);
+  transition:transform 8s cubic-bezier(.22,.8,.36,1),opacity 1.6s ease;
   animation:sunShimmer 7s ease-in-out infinite alternate;
 }
 @keyframes sunShimmer{from{filter:blur(1px) brightness(1)}to{filter:blur(1.4px) brightness(1.06)}}
@@ -90,18 +90,24 @@ body.risen .sunDisc.setting{transform:translateX(-50%) translateY(-10vmin) scale
 .horizonHaze{position:absolute;left:0;right:0;top:57vh;height:2.6vh;filter:blur(6px);
   background:linear-gradient(180deg,rgba(206,172,196,0),rgba(206,172,196,.20),rgba(206,172,196,0))}
 .moonDisc{position:absolute;left:50%;top:22vh;width:12vmin;height:12vmin;border-radius:50%;
-  transform:translateX(-50%);
+  transform:translateX(-50%);transition:opacity 1.6s ease;
   background:radial-gradient(circle at 42% 36%,#fffdf2 0%,#fbeecb 55%,#e8cf9a 100%);
   box-shadow:0 0 8vmin 2.5vmin rgba(250,235,200,.35)}
-.moonPath{position:absolute;left:50%;top:58vh;width:30vmin;height:42vh;
-  transform:translateX(-50%);filter:blur(9px);
-  clip-path:polygon(38% 0,62% 0,96% 100%,4% 100%);
-  background:linear-gradient(180deg,rgba(250,235,200,.28),rgba(250,235,200,.10) 55%,rgba(250,235,200,.03));
-  animation:pathShimmer 5.5s ease-in-out infinite alternate}
-@keyframes pathShimmer{from{opacity:.7}to{opacity:1}}
-.glint{position:absolute;width:.9vmin;height:.55vmin;border-radius:50%;background:rgba(255,240,205,.85);
-  filter:blur(1.2px);animation:glintTwinkle var(--dur,4s) ease-in-out var(--delay,0s) infinite}
-@keyframes glintTwinkle{0%,100%{opacity:0;transform:scale(.7)}50%{opacity:.9;transform:scale(1.1)}}
+/* the breathing sphere must be the only orb on screen */
+body.breathing .moonDisc,body.breathing .sunDisc{opacity:0}
+/* specular origin at the waterline: pure radial falloff — no clip, no edges */
+.pathGlow{position:absolute;left:50%;top:56.5vh;width:36vmin;height:8vh;
+  transform:translateX(-50%);filter:blur(6px);
+  background:radial-gradient(ellipse at 50% 40%,rgba(255,235,195,.34),transparent 70%);
+  animation:glowPulse 6s ease-in-out infinite alternate}
+@keyframes glowPulse{from{opacity:.65}to{opacity:1}}
+/* glitter path: independent horizontal shimmer fragments */
+.shimr{position:absolute;border-radius:50%;background:rgba(255,238,200,.8);
+  filter:blur(1.4px);transform:translateX(-50%);
+  animation:shimr var(--dur,3s) ease-in-out var(--delay,0s) infinite alternate}
+@keyframes shimr{
+  from{opacity:var(--o1,.25);transform:translateX(calc(-50% - var(--sx,.6vw))) scaleX(.85)}
+  to{opacity:var(--o2,.85);transform:translateX(calc(-50% + var(--sx,.6vw))) scaleX(1.1)}}
 .swell{position:absolute;left:-35vw;width:170vw;border-radius:50%;
   background:linear-gradient(90deg,transparent 8%,var(--sc2,rgba(210,182,214,.09)) 50%,transparent 92%);
   filter:blur(var(--sb,6px));
@@ -279,7 +285,7 @@ body.swap #affirmation{animation:swapA 1s ease, floatDrift 9s ease-in-out infini
   #sky .layer,#stars,header,footer{transition:none!important}
   #scene{transition:none!important}
   .sunDisc{transition:none!important}
-  .star,.cloud,.flake,.stalk,.leafTuft,.tree,.swell,.moonPath,.bird,.leaf,.skyGlow,.sunDisc,.glint,.cirrus,.lightShaft,.mist,.tree .canopy{animation:none!important}
+  .star,.cloud,.flake,.stalk,.leafTuft,.tree,.swell,.pathGlow,.shimr,.bird,.leaf,.skyGlow,.sunDisc,.cirrus,.lightShaft,.mist,.tree .canopy{animation:none!important}
   #affirmation .w{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}
   body.swap #affirmation{animation:none}
   #affirmation{animation:none!important}
@@ -327,7 +333,7 @@ body.swap #affirmation{animation:swapA 1s ease, floatDrift 9s ease-in-out infini
       <button id="soundBtn">🔔 Breathe</button>
       <div id="sceneName">◐ Scene</div>
     </div>
-    <div id="ver">v2026:07:04-13:05</div>
+    <div id="ver">v2026:07:04-15:45</div>
   </footer>
 </div>
 
@@ -539,15 +545,19 @@ const SCENES=[
 { id:'lake', name:'Tranquil lake', light:false, stars:true,
   kw:['calm','still','peace','water','wave','storm','ripple','reflect','settle','sand','observer','equanim','quiet'],
   sky:'linear-gradient(180deg,#171a3d 0%,#33305e 42%,#6a4a72 58%,#54406b 100%)',
-  build(c){ el(c,'moonDisc'); el(c,'water'); el(c,'horizonHaze'); el(c,'moonPath');
+  build(c){ el(c,'moonDisc'); el(c,'water'); el(c,'horizonHaze'); el(c,'pathGlow');
     /* sheen bands: broader, brighter, faster toward the viewer (perspective) */
     const bands=[[62,1.2,'.05',7,26],[68,1.6,'.07',6.5,22],[75,2.1,'.09',6,18],[83,2.6,'.11',5.5,15],[92,3.1,'.13',5,12]];
     bands.forEach(([y,h,op,bl,dur])=>el(c,'swell',{top:y+'vh',height:h+'vh','--sc2':'rgba(210,182,214,'+op+')','--sb':bl+'px','--dur':dur+'s','--delay':(-rand(0,dur))+'s'}));
-    /* moonlight glitter: sparkles inside the widening cone (denser spread lower) */
-    for(let i=0;i<12;i++){
-      const y=rand(60,95);
-      const half=3.5+(y-58)*0.28;                 // cone half-width in vw grows with depth
-      el(c,'glint',{top:y+'vh',left:(50+rand(-1,1)*half)+'vw','--dur':rand(2.5,5)+'s','--delay':(-rand(0,5))+'s'});
+    /* glitter path: 34 fragments — narrow/dense at the horizon, broad/thick/scattered near the viewer */
+    for(let i=0;i<34;i++){
+      const y=59+(i/33)*37+rand(-0.8,0.8);
+      el(c,'shimr',{top:y+'vh',
+        left:(50+rand(-1,1)*(0.8+(y-58)*0.10))+'vw',
+        width:(2+(y-58)*0.34)+'vmin',
+        height:(0.45+(y-58)*0.012)+'vmin',
+        '--dur':rand(1.8,4)+'s','--delay':(-rand(0,4))+'s','--sx':rand(.3,1)+'vw',
+        '--o1':rand(.15,.35).toFixed(2),'--o2':rand(.6,.9).toFixed(2)});
     } } },
 
 { id:'clouds', name:'Passing clouds', light:true, stars:false,
