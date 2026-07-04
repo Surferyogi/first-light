@@ -166,9 +166,6 @@ body.breathing #affWrap{display:none}
 #sphere.full{transform:scale(1)}
 #sphere.empty{transform:scale(.55)}
 #breathLabel{font-family:'Young Serif',Georgia,serif;font-size:clamp(20px,5.4vw,28px);min-height:1.3em;color:var(--fg);text-shadow:var(--txt-shadow)}
-#breathAff{font-family:'Young Serif',Georgia,serif;font-size:clamp(16px,4.6vw,22px);line-height:1.35;
-  max-width:26ch;text-wrap:balance;color:var(--fg-dim);text-shadow:var(--txt-shadow)}
-#breathCount{font-size:13px;letter-spacing:.24em;color:var(--fg-dim);text-transform:uppercase;font-weight:700}
 #breathDots{display:flex;gap:10px}
 #breathDots i{width:10px;height:10px;border-radius:50%;background:transparent;border:2px solid var(--btn-border)}
 #breathDots i.done{background:var(--accent);border-color:var(--accent)}
@@ -181,7 +178,9 @@ body.breathing #affWrap{display:none}
   font-size:clamp(30px,8.4vw,52px);
   line-height:1.22;max-width:22ch;text-wrap:balance;
   color:var(--fg);text-shadow:var(--txt-shadow);
+  animation:floatDrift 9s ease-in-out infinite;
 }
+@keyframes floatDrift{0%{transform:translateY(-7px)}55%{transform:translateY(11px)}100%{transform:translateY(-7px)}}
 #affirmation .w{display:inline-block;opacity:0;transform:translateY(14px);filter:blur(4px)}
 #affirmation .w.on{opacity:1;transform:none;filter:none;
   transition:opacity .9s ease,transform .9s ease,filter .9s ease}
@@ -192,20 +191,29 @@ body.breathing #affWrap{display:none}
   color:var(--fg-dim);backdrop-filter:blur(4px);
 }
 #saveBtn.saved{border-color:var(--accent);color:var(--accent)}
+#actRow{display:flex;gap:12px;align-items:center}
+#likeBtn,#dislikeBtn{font-size:17px;padding:9px 14px;border-radius:999px;border:1px solid var(--btn-border);opacity:.85}
+#likeBtn.on{border-color:var(--accent);background:rgba(255,193,120,.16);opacity:1}
+#readyBtn{margin-top:6px;font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:13px 26px;border-radius:999px;color:var(--fg);
+  border:1px solid var(--accent);background:rgba(255,193,120,.14);backdrop-filter:blur(4px)}
+#sendoff{position:fixed;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  text-align:center;background:linear-gradient(180deg,#2e2a5e 0%,#7a4b7f 45%,#e0745f 78%,#ffc178 100%)}
+#sendoff.show{display:flex}
+#sendoff h2{font-family:'Young Serif',Georgia,serif;font-size:clamp(34px,9vw,54px);color:var(--ivory);text-shadow:0 2px 30px rgba(10,10,30,.35)}
+#sendoff p{color:rgba(255,246,232,.75);font-size:14px;letter-spacing:.08em;max-width:30ch}
 
 footer{display:flex;flex-direction:column;gap:12px;align-items:center;
   opacity:0;transition:opacity 2.4s ease 1s}
 body.risen footer{opacity:1}
-#streak{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);font-weight:700}
-#streak b{color:var(--accent)}
 #hint{font-size:12px;letter-spacing:.1em;color:var(--fg-ghost)}
 #footRow{display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center}
 #savedBtn,#soundBtn{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);padding:6px 10px}
 #sceneName{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-ghost);padding:6px 10px}
 #ver{font-size:10px;letter-spacing:.08em;color:var(--fg-ghost);opacity:.6}
 
-body.swap #affirmation{animation:swapA 1s ease}
-@keyframes swapA{0%{opacity:1}30%{opacity:0;transform:scale(.985)}70%{opacity:0}100%{opacity:1;transform:none}}
+body.swap #affirmation{animation:swapA 1s ease, floatDrift 9s ease-in-out infinite}
+@keyframes swapA{0%{opacity:1}30%{opacity:0}70%{opacity:0}100%{opacity:1}}
 
 /* ---------- Saved drawer ---------- */
 #drawer{
@@ -234,6 +242,7 @@ body.swap #affirmation{animation:swapA 1s ease}
   .star,.cloud,.flake,.stalk,.leafTuft,.tree,.ripple{animation:none!important}
   #affirmation .w{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}
   body.swap #affirmation{animation:none}
+  #affirmation{animation:none!important}
   #sphere{transition:transform .3s ease}
 }
 </style>
@@ -255,30 +264,37 @@ body.swap #affirmation{animation:swapA 1s ease}
 
   <main>
     <div id="breathWrap">
-      <div id="breathCount">Box breathing · 4·4·4·4</div>
       <div id="sphere"><span id="sphereNum">4</span></div>
       <div id="breathLabel">Breathe in</div>
-      <div id="breathAff"></div>
       <div id="breathDots"><i></i><i></i><i></i></div>
       <button id="skipBreath">Skip</button>
     </div>
     <div id="affWrap">
       <h1 id="affirmation" aria-live="polite"></h1>
       <div id="srcTag"></div>
-      <button id="saveBtn">☆ Save</button>
+      <div id="actRow">
+        <button id="saveBtn">☆ Save</button>
+        <button id="likeBtn" title="More like this">👍</button>
+        <button id="dislikeBtn" title="Never show again">👎</button>
+      </div>
+      <button id="readyBtn">☀ I'm Ready for the World</button>
     </div>
   </main>
 
   <footer>
-    <div id="streak"></div>
     <div id="footRow">
       <button id="savedBtn">★ Saved</button>
       <button id="soundBtn">🔔 Breathe</button>
       <div id="sceneName">◐ Scene</div>
     </div>
     <div id="hint">tap anywhere for another</div>
-    <div id="ver">v2026:07:04-07:15</div>
+    <div id="ver">v2026:07:04-10:55</div>
   </footer>
+</div>
+
+<div id="sendoff">
+  <h2>Go get it.</h2>
+  <p>You're set. Close First Light and take on the day.</p>
 </div>
 
 <div id="drawer">
@@ -301,27 +317,27 @@ const LINES = [
 {t:"I need less than I fear.",f:"Stoic"},
 {t:"What happens is raw material. I shape it.",f:"Stoic"},
 {t:"I was made for this weather.",f:"Stoic"},
-{t:"Fortune lends; I hold lightly.",f:"Stoic"},
+{t:"Nothing that can happen today is bigger than me.",f:"Stoic"},
 {t:"My judgment, not the event, disturbs me.",f:"Stoic"},
 {t:"I choose my judgments. I choose peace.",f:"Stoic"},
 {t:"Difficulty introduces me to myself.",f:"Stoic"},
 {t:"I act well. Outcomes follow their nature.",f:"Stoic"},
 {t:"This too is within my power to bear.",f:"Stoic"},
 {t:"I am rehearsed for hard mornings.",f:"Stoic"},
-{t:"Do the day's work. That is victory.",f:"Stoic"},
+{t:"I conquer the day by winning the morning.",f:"Stoic"},
 {t:"I waste no strength on what I can't control.",f:"Stoic"},
 {t:"Calm is a decision I renew.",f:"Stoic"},
 {t:"I meet fate as a partner, not an enemy.",f:"Stoic"},
 {t:"Character is my only true property.",f:"Stoic"},
 {t:"I can endure this hour. Then the next.",f:"Stoic"},
 {t:"Virtue now. Everything else, later.",f:"Stoic"},
-{t:"Today I practice, not perfect, virtue.",f:"Stoic"},
+{t:"I don't need perfect. I need brave.",f:"Stoic"},
 /* ---- CBT (reframing, evidence, behavior-first) ---- */
 {t:"Feelings are visitors, not verdicts.",f:"CBT"},
 {t:"Thoughts are hypotheses. I test them.",f:"CBT"},
 {t:"I look for evidence, not echoes of fear.",f:"CBT"},
 {t:"One setback is data, not destiny.",f:"CBT"},
-{t:"'Always' and 'never' are rarely true.",f:"CBT"},
+{t:"My fears exaggerate. My track record doesn't.",f:"CBT"},
 {t:"I can act before I feel ready.",f:"CBT"},
 {t:"This thought is a story. I can edit it.",f:"CBT"},
 {t:"Anxiety predicts. It doesn't know.",f:"CBT"},
@@ -329,9 +345,9 @@ const LINES = [
 {t:"Small action beats perfect analysis.",f:"CBT"},
 {t:"I replace 'what if' with 'what's next'.",f:"CBT"},
 {t:"Discomfort is not danger.",f:"CBT"},
-{t:"I rate the problem, not myself.",f:"CBT"},
+{t:"The problem is the problem. I am the solver.",f:"CBT"},
 {t:"Behavior first. Mood follows.",f:"CBT"},
-{t:"Catastrophes shrink when written down.",f:"CBT"},
+{t:"I shrink problems to their true size.",f:"CBT"},
 {t:"I question the thought, not my worth.",f:"CBT"},
 {t:"Progress counts even when it's quiet.",f:"CBT"},
 {t:"Today I gather evidence of my competence.",f:"CBT"},
@@ -351,19 +367,19 @@ const LINES = [
 {t:"Flexible beats forceful.",f:"NLP"},
 {t:"I set the outcome, then find the path.",f:"NLP"},
 {t:"Energy flows where my focus goes.",f:"NLP"},
-{t:"I switch the picture: bright, close, possible.",f:"NLP"},
+{t:"I picture the win — bright, close, mine.",f:"NLP"},
 {t:"If one way fails, I have more maps.",f:"NLP"},
 {t:"I speak to myself in the voice of a coach.",f:"NLP"},
-{t:"Possibility is a direction I face.",f:"NLP"},
+{t:"I am a magnet for possibility.",f:"NLP"},
 {t:"I act as if — until it is.",f:"NLP"},
 {t:"Each morning I install a better pattern.",f:"NLP"},
 {t:"My state is a dial. My hand is on it.",f:"NLP"},
 /* ---- Mindfulness & Self-Compassion ---- */
 {t:"I am here. This breath is enough.",f:"Mindfulness"},
 {t:"I meet myself with kindness first.",f:"Mindfulness"},
-{t:"May I be gentle with my own becoming.",f:"Mindfulness"},
+{t:"I am becoming — and it is magnificent.",f:"Mindfulness"},
 {t:"Right now, in this breath, I am safe.",f:"Mindfulness"},
-{t:"I notice, I allow, I soften.",f:"Mindfulness"},
+{t:"I am at home in myself.",f:"Mindfulness"},
 {t:"Struggle is human. I am not alone in it.",f:"Mindfulness"},
 {t:"I hold my flaws the way a friend would.",f:"Mindfulness"},
 {t:"One moment, fully lived, is a good start.",f:"Mindfulness"},
@@ -414,11 +430,11 @@ const LINES = [
 {t:"Mono no aware: fleeting makes it precious.",f:"Japanese"},
 {t:"Mottainai: I waste no morning.",f:"Japanese"},
 {t:"One bowl, one breath, one task.",f:"Japanese"},
-{t:"Ma: I honor the space between efforts.",f:"Japanese"},
-{t:"Continuing is power.",f:"Japanese"},
-{t:"I polish today like a single stone.",f:"Japanese"},
+{t:"Ma: my stillness sharpens my strike.",f:"Japanese"},
+{t:"Persistence is my quiet genius.",f:"Japanese"},
+{t:"I craft this day like a masterpiece.",f:"Japanese"},
 {t:"Enso: complete, even while unfinished.",f:"Japanese"},
-{t:"Omoiyari: I lead with quiet consideration.",f:"Japanese"},
+{t:"Quiet strength speaks loudest — that is my way.",f:"Japanese"},
 {t:"Today is a tea ceremony: full presence.",f:"Japanese"},
 {t:"Wabi-sabi eyes: I find beauty in the unpolished.",f:"Japanese"},
 /* ---- Chinese concepts (Art of War, Tao Te Ching) ---- */
@@ -435,13 +451,13 @@ const LINES = [
 {t:"The stiff tree snaps; the supple bends.",f:"Chinese"},
 {t:"Stillness before movement; strategy before strike.",f:"Chinese"},
 {t:"I do not contend, so nothing contends with me.",f:"Chinese"},
-{t:"I do the great while it is still small.",f:"Chinese"},
+{t:"I build empires from small mornings.",f:"Chinese"},
 {t:"I sharpen the axe before I cut.",f:"Chinese"},
 {t:"The best time to plant was yesterday. The second best is now.",f:"Chinese"},
 {t:"I subdue the day without a fight.",f:"Chinese"},
 {t:"Empty mind, full readiness.",f:"Chinese"},
 {t:"Water wears the stone by returning.",f:"Chinese"},
-{t:"I hold the low ground and gather power.",f:"Chinese"},
+{t:"Like water, I gather power quietly.",f:"Chinese"},
 ];
 
 const AI_ENDPOINT = "https://ckyshjxznltdkxfvhfdy.supabase.co/functions/v1/first-light?n=20";
@@ -563,7 +579,14 @@ let current={t:"",f:""};
 let currentIsAI=false;
 const normLine=x=> typeof x==='string' ? {t:x.trim(),f:''} :
   (x && typeof x==='object') ? {t:String(x.t||x.text||'').trim(),f:String(x.f||x.framework||'').trim()} : null;
-function rebuildPool(){ pool = aiLines.length ? aiLines.concat(LINES) : LINES.slice(); }
+function rebuildPool(){
+  const r=getRates();
+  let base = aiLines.length ? aiLines.concat(LINES) : LINES.slice();
+  base = base.filter(x=>!r.dislikes.includes(x.t));
+  const boosted = base.filter(x=>r.likes.includes(x.t));   // 👍 lines appear twice
+  pool = base.concat(boosted);
+  if(!pool.length) pool = LINES.slice();                   // safety: never empty
+}
 async function loadAI(){
   try{
     const cached=JSON.parse(localStorage.getItem('fl_ai2')||'null');
@@ -573,7 +596,10 @@ async function loadAI(){
   }catch(e){}
   try{
     const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),9000);
-    const r=await fetch(AI_ENDPOINT,{signal:ctrl.signal});
+    const rt=getRates();
+    const r=await fetch(AI_ENDPOINT,{signal:ctrl.signal,method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({n:21,likes:rt.likes.slice(0,12),dislikes:rt.dislikes.slice(0,12)})});
     clearTimeout(t);
     const d=await r.json();
     if(r.ok && Array.isArray(d.lines) && d.lines.length){
@@ -590,7 +616,7 @@ function refreshDailyIfAI(){
   if(userTapped || !aiLines.length) return;
   setDaily();
   matchSceneToLine(current.t,true);   // still launch-time: theme may settle once
-  if(document.body.classList.contains('breathing')){ $('breathAff').textContent=current.t; return; }
+  if(document.body.classList.contains('breathing')) return;   // quote revealed only after breathing
   renderWords();
 }
 function setDaily(){
@@ -611,7 +637,7 @@ function renderWords(){
   });
   [...el2.querySelectorAll('.w')].forEach((s,i)=>setTimeout(()=>s.classList.add('on'),reduced()?0:400+i*240));
   $('srcTag').textContent = [current.f, currentIsAI?'✨ fresh today':''].filter(Boolean).join(' · ');
-  updateSaveBtn();
+  updateSaveBtn(); updateRateBtns();
 }
 function nextLine(){
   userTapped=true;
@@ -624,6 +650,36 @@ function nextLine(){
   document.body.classList.add('swap');
   setTimeout(()=>renderWords(), reduced()?0:320);
 }
+
+/* ================= Ratings — 👍 boosts, 👎 removes; feeds the AI prompt ===== */
+function getRates(){ try{const r=JSON.parse(localStorage.getItem('fl_rate'))||{};return {likes:r.likes||[],dislikes:r.dislikes||[]}}catch(e){return {likes:[],dislikes:[]}} }
+function setRates(r){ try{localStorage.setItem('fl_rate',JSON.stringify(r))}catch(e){} }
+function updateRateBtns(){
+  const r=getRates();
+  $('likeBtn').classList.toggle('on',r.likes.includes(current.t));
+}
+$('likeBtn').addEventListener('click',e=>{
+  e.stopPropagation();
+  const r=getRates();
+  if(r.likes.includes(current.t)) r.likes=r.likes.filter(x=>x!==current.t);
+  else{ r.likes.unshift(current.t); r.dislikes=r.dislikes.filter(x=>x!==current.t); }
+  setRates(r); rebuildPool(); updateRateBtns();
+});
+$('dislikeBtn').addEventListener('click',e=>{
+  e.stopPropagation();
+  const r=getRates();
+  if(!r.dislikes.includes(current.t)) r.dislikes.unshift(current.t);
+  r.likes=r.likes.filter(x=>x!==current.t);
+  setRates(r); rebuildPool();
+  nextLine();                       // never show a disliked line again
+});
+/* ================= "I'm Ready for the World" — closing ritual ================= */
+$('readyBtn').addEventListener('click',e=>{
+  e.stopPropagation(); ensureCtx(); strikeBowl(0.6);
+  $('sendoff').classList.add('show');
+  setTimeout(()=>{ try{window.close()}catch(_){} },1400); // best-effort; many platforms refuse
+});
+$('sendoff').addEventListener('pointerdown',e=>{e.stopPropagation();$('sendoff').classList.remove('show');});
 
 /* ================= Bookmarks (stored as plain text — v2/v3 compatible) ===== */
 function getSaved(){ try{return JSON.parse(localStorage.getItem('fl_saved'))||[]}catch(e){return []} }
@@ -730,7 +786,6 @@ function startBreathing(){
   if(breathing)return;
   breathing=true;
   document.body.classList.add('breathing');
-  $('breathAff').textContent=current.t;   // daily affirmation shown while breathing
   const dots=[...document.querySelectorAll('#breathDots i')];
   dots.forEach(d=>d.classList.remove('done'));
   let cycle=0, phase=0;
@@ -773,21 +828,6 @@ $('soundBtn').addEventListener('click',e=>{
 const h=today.getHours();
 $('greet').textContent = h<5?'You\u2019re up early':h<12?'Good morning':h<18?'Good afternoon':'Good evening';
 $('date').textContent = today.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
-
-(function streak(){
-  let s={last:null,count:0};
-  try{s=JSON.parse(localStorage.getItem('fl_streak'))||s}catch(e){}
-  if(s.last!==dayKey){
-    const y=new Date(today);y.setDate(y.getDate()-1);
-    const yKey=y.toISOString().slice(0,10);
-    s.count=(s.last===yKey)?s.count+1:1;
-    s.last=dayKey;
-    try{localStorage.setItem('fl_streak',JSON.stringify(s))}catch(e){}
-  }
-  $('streak').innerHTML = s.count>1
-    ? `\u2600\ufe0e <b>${s.count} mornings</b> in a row`
-    : '\u2600\ufe0e Day <b>1</b> — welcome back tomorrow';
-})();
 
 (function stars(){
   const box=$('stars');
