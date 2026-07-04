@@ -66,13 +66,13 @@ body.risen #scene{opacity:1}
 }
 body.risen .sunDisc{transform:translateX(-50%) translateY(-16vmin)}
 .sunDisc.setting{
-  background:radial-gradient(circle at 50% 40%,#ffe2c2 0%,#ffb069 45%,#f06a45 78%,rgba(240,106,69,0) 100%);
-  box-shadow:0 0 18vmin 6vmin rgba(240,120,80,.38),0 0 42vmin 14vmin rgba(180,60,60,.25);
+  background:radial-gradient(circle at 50% 40%,#ffe9c9 0%,#ffbe72 45%,#e8843e 78%,rgba(232,132,62,0) 100%);
+  box-shadow:0 0 18vmin 6vmin rgba(240,150,80,.38),0 0 42vmin 14vmin rgba(200,110,50,.25);
 }
 body.risen .sunDisc.setting{transform:translateX(-50%) translateY(-10vmin)}
 .hazeBand{position:absolute;left:0;right:0;bottom:0;height:30vh;
   background:linear-gradient(0deg,rgba(255,193,120,.28),rgba(255,193,120,0))}
-.hazeBand.setting{background:linear-gradient(0deg,rgba(240,120,80,.30),rgba(240,120,80,0))}
+.hazeBand.setting{background:linear-gradient(0deg,rgba(240,160,80,.30),rgba(240,160,80,0))}
 
 /* --- lake --- */
 .water{position:absolute;left:0;right:0;bottom:0;height:42vh;
@@ -112,25 +112,25 @@ body.risen .sunDisc.setting{transform:translateX(-50%) translateY(-10vmin)}
 .stalk{position:absolute;bottom:0;border-radius:10px;transform-origin:50% 100%;
   clip-path:polygon(12% 0,88% 0,100% 100%,0% 100%);
   background:
-    repeating-linear-gradient(180deg,rgba(16,44,26,0) 0 14vmin,rgba(16,44,26,.55) 14vmin calc(14vmin + 3px)),
-    linear-gradient(90deg,#245536,#54925f 45%,#2c5e3d);
+    repeating-linear-gradient(180deg,rgba(12,40,38,0) 0 14vmin,rgba(12,40,38,.55) 14vmin calc(14vmin + 3px)),
+    linear-gradient(90deg,#1f4d49,#4f8f86 45%,#28564f);
   animation:sway var(--dur,7s) ease-in-out var(--delay,0s) infinite alternate}
 .stalk.back{filter:blur(3px);opacity:.55}
 @keyframes sway{from{transform:rotate(-1deg)}to{transform:rotate(1deg)}}
 .leafTuft{position:absolute;width:9vmin;height:3vmin;border-radius:50% 50% 50% 0;
-  background:#3f7a4c;filter:blur(1px);opacity:.8;transform-origin:0 100%;
+  background:#3e7d74;filter:blur(1px);opacity:.8;transform-origin:0 100%;
   animation:sway var(--dur,6s) ease-in-out var(--delay,0s) infinite alternate}
 
 /* --- breeze trees --- */
 .ground{position:absolute;left:0;right:0;bottom:0;height:16vh;
-  background:linear-gradient(180deg,#28402f,#16281d)}
+  background:linear-gradient(180deg,#274641,#152823)}
 .tree{position:absolute;transform-origin:50% 100%;
   animation:treeSway var(--dur,9s) ease-in-out var(--delay,0s) infinite alternate}
 @keyframes treeSway{from{transform:scale(var(--sc,1)) rotate(-.8deg)}to{transform:scale(var(--sc,1)) rotate(.8deg)}}
 .tree .trunk{position:absolute;left:50%;bottom:0;width:1.6vmin;height:15vmin;
   transform:translateX(-50%);background:#2b2320;
   clip-path:polygon(30% 0,70% 0,100% 100%,0% 100%)}
-.tree .canopy{position:absolute;border-radius:50%;background:#22492e;filter:blur(1px)}
+.tree .canopy{position:absolute;border-radius:50%;background:#23504a;filter:blur(1px)}
 .tree.back{filter:blur(3px);opacity:.6}
 
 /* ---------- Stage ---------- */
@@ -160,6 +160,9 @@ body.breathing #affWrap{display:none}
   transition:transform 4s cubic-bezier(.45,0,.55,1);
   will-change:transform;
 }
+#sphere{display:flex;align-items:center;justify-content:center}
+#sphereNum{font-family:'Young Serif',Georgia,serif;font-size:11vmin;max-font-size:70px;
+  color:rgba(74,43,63,.48);line-height:1;user-select:none}
 #sphere.full{transform:scale(1)}
 #sphere.empty{transform:scale(.55)}
 #breathLabel{font-family:'Young Serif',Georgia,serif;font-size:clamp(20px,5.4vw,28px);min-height:1.3em;color:var(--fg);text-shadow:var(--txt-shadow)}
@@ -167,8 +170,8 @@ body.breathing #affWrap{display:none}
   max-width:26ch;text-wrap:balance;color:var(--fg-dim);text-shadow:var(--txt-shadow)}
 #breathCount{font-size:13px;letter-spacing:.24em;color:var(--fg-dim);text-transform:uppercase;font-weight:700}
 #breathDots{display:flex;gap:10px}
-#breathDots i{width:8px;height:8px;border-radius:50%;background:var(--btn-border)}
-#breathDots i.done{background:var(--accent)}
+#breathDots i{width:10px;height:10px;border-radius:50%;background:transparent;border:2px solid var(--btn-border)}
+#breathDots i.done{background:var(--accent);border-color:var(--accent)}
 #skipBreath{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-ghost);padding:10px 18px}
 
 /* ---------- Affirmation ---------- */
@@ -197,7 +200,8 @@ body.risen footer{opacity:1}
 #streak b{color:var(--accent)}
 #hint{font-size:12px;letter-spacing:.1em;color:var(--fg-ghost)}
 #footRow{display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center}
-#savedBtn,#soundBtn,#sceneBtn{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);padding:6px 10px}
+#savedBtn,#soundBtn{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);padding:6px 10px}
+#sceneName{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-ghost);padding:6px 10px}
 #ver{font-size:10px;letter-spacing:.08em;color:var(--fg-ghost);opacity:.6}
 
 body.swap #affirmation{animation:swapA 1s ease}
@@ -252,7 +256,7 @@ body.swap #affirmation{animation:swapA 1s ease}
   <main>
     <div id="breathWrap">
       <div id="breathCount">Box breathing · 4·4·4·4</div>
-      <div id="sphere"></div>
+      <div id="sphere"><span id="sphereNum">4</span></div>
       <div id="breathLabel">Breathe in</div>
       <div id="breathAff"></div>
       <div id="breathDots"><i></i><i></i><i></i></div>
@@ -270,10 +274,10 @@ body.swap #affirmation{animation:swapA 1s ease}
     <div id="footRow">
       <button id="savedBtn">★ Saved</button>
       <button id="soundBtn">🔔 Breathe</button>
-      <button id="sceneBtn">◐ Scene</button>
+      <div id="sceneName">◐ Scene</div>
     </div>
     <div id="hint">tap anywhere for another</div>
-    <div id="ver">v2026:07:03-15:00</div>
+    <div id="ver">v2026:07:04-07:15</div>
   </footer>
 </div>
 
@@ -396,6 +400,48 @@ const LINES = [
 {t:"Suffering eases when grasping loosens.",f:"Buddhist"},
 {t:"I am the observer of the storm, not the storm.",f:"Buddhist"},
 {t:"One mindful step is the whole path.",f:"Buddhist"},
+/* ---- Japanese concepts (wabi-sabi, ichigo ichie, kaizen, kintsugi, gaman) ---- */
+{t:"Ichigo ichie: this morning happens only once.",f:"Japanese"},
+{t:"Wabi-sabi: imperfect, impermanent, still beautiful.",f:"Japanese"},
+{t:"Kaizen: one percent better today.",f:"Japanese"},
+{t:"Kintsugi: my repaired places shine gold.",f:"Japanese"},
+{t:"Fall seven times, rise eight.",f:"Japanese"},
+{t:"Gaman: quiet endurance is strength.",f:"Japanese"},
+{t:"Shoshin: I begin as a beginner.",f:"Japanese"},
+{t:"Ikigai: my reason rises with me.",f:"Japanese"},
+{t:"Like bamboo, I bend and do not break.",f:"Japanese"},
+{t:"The cherry blossom does not cling. Neither do I.",f:"Japanese"},
+{t:"Mono no aware: fleeting makes it precious.",f:"Japanese"},
+{t:"Mottainai: I waste no morning.",f:"Japanese"},
+{t:"One bowl, one breath, one task.",f:"Japanese"},
+{t:"Ma: I honor the space between efforts.",f:"Japanese"},
+{t:"Continuing is power.",f:"Japanese"},
+{t:"I polish today like a single stone.",f:"Japanese"},
+{t:"Enso: complete, even while unfinished.",f:"Japanese"},
+{t:"Omoiyari: I lead with quiet consideration.",f:"Japanese"},
+{t:"Today is a tea ceremony: full presence.",f:"Japanese"},
+{t:"Wabi-sabi eyes: I find beauty in the unpolished.",f:"Japanese"},
+/* ---- Chinese concepts (Art of War, Tao Te Ching) ---- */
+{t:"I win first in the mind, then act.",f:"Chinese"},
+{t:"The supreme victory needs no battle.",f:"Chinese"},
+{t:"I know myself; half the battle is won.",f:"Chinese"},
+{t:"In the midst of chaos, I find opportunity.",f:"Chinese"},
+{t:"I choose my battles; I keep my strength.",f:"Chinese"},
+{t:"Appear calm; move decisively.",f:"Chinese"},
+{t:"The wise general adapts like water.",f:"Chinese"},
+{t:"Wu wei: I act without forcing.",f:"Chinese"},
+{t:"Be like water: soft, patient, unstoppable.",f:"Chinese"},
+{t:"A journey of a thousand miles: one step, now.",f:"Chinese"},
+{t:"The stiff tree snaps; the supple bends.",f:"Chinese"},
+{t:"Stillness before movement; strategy before strike.",f:"Chinese"},
+{t:"I do not contend, so nothing contends with me.",f:"Chinese"},
+{t:"I do the great while it is still small.",f:"Chinese"},
+{t:"I sharpen the axe before I cut.",f:"Chinese"},
+{t:"The best time to plant was yesterday. The second best is now.",f:"Chinese"},
+{t:"I subdue the day without a fight.",f:"Chinese"},
+{t:"Empty mind, full readiness.",f:"Chinese"},
+{t:"Water wears the stone by returning.",f:"Chinese"},
+{t:"I hold the low ground and gather power.",f:"Chinese"},
 ];
 
 const AI_ENDPOINT = "https://ckyshjxznltdkxfvhfdy.supabase.co/functions/v1/first-light?n=20";
@@ -423,7 +469,7 @@ const SCENES=[
 
 { id:'sunset', name:'Sunset', light:false, stars:true,
   kw:['let go','release','rest','set it down','later','enough','evening','close','carry less','loosen'],
-  sky:'linear-gradient(180deg,#2a1533 0%,#5a2244 40%,#a83d46 68%,#e0563e 84%,#ffb35c 100%)',
+  sky:'linear-gradient(180deg,#241531 0%,#4a2a44 38%,#8a4a30 66%,#d97a2e 84%,#ffc178 100%)',
   build(c){ el(c,'hazeBand setting'); el(c,'sunDisc setting');
     for(let i=0;i<2;i++) el(c,'cloud dim',{top:rand(30,45)+'vh','--sc':rand(.5,.7),'--dur':rand(150,220)+'s','--delay':(-rand(0,150))+'s',opacity:.25}); } },
 
@@ -455,7 +501,7 @@ const SCENES=[
 
 { id:'bamboo', name:'Bamboo forest', light:false, stars:false,
   kw:['bend','flexib','patien','resilien','yield','discipline','practice','grow','endure','forceful','maps'],
-  sky:'linear-gradient(180deg,#17301f 0%,#2f5c3a 55%,#6f9e6b 100%)',
+  sky:'linear-gradient(180deg,#122f2e 0%,#265a54 55%,#6aa198 100%)',
   build(c){
     for(let i=0;i<4;i++) el(c,'stalk back',{left:rand(2,94)+'vw',width:rand(1.6,2.4)+'vmin',height:rand(60,90)+'vh','--dur':rand(6,9)+'s','--delay':(-rand(0,6))+'s'});
     for(let i=0;i<5;i++){ const x=6+i*20+rand(-4,4);
@@ -486,7 +532,7 @@ function applyScene(s,fade){
     const c=$('scene'); c.innerHTML=''; s.build(c);
     document.body.classList.toggle('lightScene',!!s.light);
     $('stars').style.display=s.stars?'':'none';
-    $('sceneBtn').textContent='◐ '+s.name;
+    $('sceneName').textContent='◐ '+s.name;
   };
   if(fade && !reduced() && document.body.classList.contains('risen')){
     const els=[$('scene'),$('sceneSky')];
@@ -507,11 +553,6 @@ function sceneForLine(text){
   return null;
 }
 function matchSceneToLine(text,fade){ const s=sceneForLine(text); if(s) applyScene(s,fade); }
-function shuffleScene(){
-  const list=eligibleScenes().filter(s=>s!==currentScene);
-  applyScene(list[Math.floor(Math.random()*list.length)],true);
-}
-$('sceneBtn').addEventListener('click',e=>{e.stopPropagation();shuffleScene();});
 
 /* ======================================================================
    Affirmations — AI batch (framework-tagged) with silent library fallback
@@ -548,6 +589,7 @@ let userTapped=false;
 function refreshDailyIfAI(){
   if(userTapped || !aiLines.length) return;
   setDaily();
+  matchSceneToLine(current.t,true);   // still launch-time: theme may settle once
   if(document.body.classList.contains('breathing')){ $('breathAff').textContent=current.t; return; }
   renderWords();
 }
@@ -577,7 +619,7 @@ function nextLine(){
   do{ n=Math.floor(Math.random()*pool.length); tries++; }while(pool[n].t===current.t && tries<10);
   current=pool[n];
   currentIsAI = aiLines.some(x=>x.t===current.t);
-  matchSceneToLine(current.t,true);
+  /* theme is fixed per launch — no mid-session scene changes */
   document.body.classList.remove('swap');void document.body.offsetWidth;
   document.body.classList.add('swap');
   setTimeout(()=>renderWords(), reduced()?0:320);
@@ -614,7 +656,7 @@ function renderDrawer(){
   a.forEach(line=>{
     const row=document.createElement('div');row.className='savedItem';
     const sp=document.createElement('span');sp.textContent=line;
-    sp.addEventListener('click',()=>{ current={t:line,f:frameworkOf(line)}; currentIsAI=aiLines.some(x=>x.t===line); userTapped=true; closeDrawer(); matchSceneToLine(line,true); renderWords(); });
+    sp.addEventListener('click',()=>{ current={t:line,f:frameworkOf(line)}; currentIsAI=aiLines.some(x=>x.t===line); userTapped=true; closeDrawer(); renderWords(); });
     const rm=document.createElement('button');rm.className='rm';rm.textContent='×';
     rm.addEventListener('click',ev=>{ev.stopPropagation(); setSaved(getSaved().filter(x=>x!==line)); renderDrawer(); updateSaveBtn();});
     row.appendChild(sp);row.appendChild(rm);
@@ -676,7 +718,14 @@ const PHASES=[
   {label:'Hold',       cls:'empty', sec:4, gain:0.12, f0:98},
 ];
 const CYCLES=3;
-let breathTimer=null, breathing=false;
+let breathTimer=null, tickTimer=null, breathing=false;
+function startTick(sec){
+  clearInterval(tickTimer);
+  let n=sec;
+  const num=$('sphereNum');
+  num.textContent=n;
+  tickTimer=setInterval(()=>{ n--; if(n<1){clearInterval(tickTimer);return;} num.textContent=n; },1000);
+}
 function startBreathing(){
   if(breathing)return;
   breathing=true;
@@ -692,6 +741,7 @@ function startBreathing(){
     if(cycle>=CYCLES){ dots[CYCLES-1].classList.add('done'); return endBreathing(); }
     const p=PHASES[phase];
     label.textContent=p.label;
+    startTick(p.sec);                     // visible 4-3-2-1 counter
     strikeBowl(p.gain,p.f0);              // rhythm aligned with the box
     sphere.classList.remove('full','empty');
     void sphere.offsetWidth;
@@ -706,6 +756,7 @@ function endBreathing(){
   if(!breathing)return;
   breathing=false;
   clearTimeout(breathTimer);
+  clearInterval(tickTimer);
   document.body.classList.remove('breathing');
   strikeBowl(0.30);
   renderWords();
@@ -763,7 +814,7 @@ window.__fl={
   applySceneById:id=>{const s=SCENES.find(x=>x.id===id);if(s)applyScene(s);},
   scenes:SCENES.map(s=>s.id),
   current:()=>currentScene&&currentScene.id,
-  forceLine:t=>{current={t,f:frameworkOf(t)};currentIsAI=false;userTapped=true;matchSceneToLine(t,false);renderWords();},
+  forceLine:t=>{current={t,f:frameworkOf(t)};currentIsAI=false;userTapped=true;renderWords();},
   sceneFor:t=>{const s=sceneForLine(t);return s?s.id:null},
   line:()=>current,
 };
