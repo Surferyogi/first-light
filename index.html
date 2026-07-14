@@ -335,7 +335,7 @@ body.swap #affirmation{animation:swapA 1s ease, floatDrift 9s ease-in-out infini
       <button id="soundBtn">🔔 Breathe</button>
     </div>
     <div id="sceneName">◐ Scene</div>
-    <div id="ver">v2026:07:08-10:35</div>
+    <div id="ver">v2026:07:13-23:07</div>
   </footer>
 </div>
 
@@ -511,8 +511,9 @@ const AI_ENDPOINT = "https://ckyshjxznltdkxfvhfdy.supabase.co/functions/v1/first
 
 const $=id=>document.getElementById(id);
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
-const today=new Date();
-const dayKey=today.toISOString().slice(0,10);
+let today=new Date();
+function makeDayKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+let dayKey=makeDayKey(today);   // LOCAL date — rolls at the user's midnight, not UTC's
 function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 const rand=(a,b)=>a+Math.random()*(b-a);
 
@@ -705,18 +706,25 @@ function refreshDailyIfAI(){
   if(document.body.classList.contains('breathing')) return;   // quote revealed only after breathing
   renderWords();
 }
+function prevDaily(){ // yesterday's stored daily line — only when it belongs to a DIFFERENT day
+  try{const p=JSON.parse(localStorage.getItem('fl_lastdaily')||'null');return (p&&p.date!==dayKey)?p.t:null;}catch(e){return null;}
+}
 function pickDaily(list){
   const dis=getRates().dislikes;
-  let i=hashStr(dayKey)%list.length;
+  const avoid=prevDaily();
+  let i=hashStr(dayKey)%list.length, fallback=null;
   for(let step=0;step<list.length;step++){
     const cand=list[(i+step)%list.length];
-    if(!dis.includes(cand.t)) return cand;
+    if(dis.includes(cand.t)) continue;
+    if(fallback===null) fallback=cand;   // first eligible line, in case every eligible line equals yesterday's
+    if(cand.t!==avoid) return cand;       // prefer a line different from yesterday
   }
-  return list[i]; // all disliked (degenerate) — show something rather than nothing
+  return fallback || list[i]; // all disliked (degenerate) — show something rather than nothing
 }
 function setDaily(){
   if(aiLines.length){ current=pickDaily(aiLines); currentIsAI=true; }
   else{ current=pickDaily(LINES); currentIsAI=false; }
+  try{localStorage.setItem('fl_lastdaily',JSON.stringify({date:dayKey,t:current.t}));}catch(e){}
 }
 
 /* ================= Affirmation rendering ================= */
@@ -937,9 +945,12 @@ $('soundBtn').addEventListener('click',e=>{
 });
 
 /* ================= Greeting, date, streak, stars ================= */
-const h=today.getHours();
-$('greet').textContent = h<5?'You\u2019re up early':h<12?'Good morning':h<18?'Good afternoon':'Good evening';
-$('date').textContent = today.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+function renderGreeting(){
+  const h=today.getHours();
+  $('greet').textContent = h<5?'You\u2019re up early':h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  $('date').textContent = today.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+}
+renderGreeting();
 
 (function stars(){
   const box=$('stars');
@@ -961,6 +972,22 @@ loadAI();
 requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.add('risen')));
 tryBowl();
 startBreathing();
+
+/* Resident-PWA safety: a backgrounded PWA never re-runs boot, so today/dayKey
+   (and therefore the daily line) can freeze on the day it was first opened.
+   Re-check on resume; if the LOCAL day rolled over, refresh greeting + daily line.
+   Same-day resumes are a cheap no-op. Scene stays locked for the session. */
+function refreshForNewDay(){
+  const k=makeDayKey(new Date());
+  if(k===dayKey) return;                 // same local day — nothing to do
+  today=new Date(); dayKey=k;
+  renderGreeting();
+  userTapped=false;                      // new day → show the fresh daily line, not a navigated one
+  setDaily();
+  if(!document.body.classList.contains('breathing')) renderWords();  // quote is hidden during breathing
+}
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) refreshForNewDay(); });
+window.addEventListener('focus',refreshForNewDay);
 
 /* test hooks */
 window.__fl={
