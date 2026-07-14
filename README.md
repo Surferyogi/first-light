@@ -122,6 +122,7 @@ Skipping step 3 is the classic mistake — the phone will keep serving the old c
 | `fl_rate` | `{likes:[], dislikes:[]}` — the learning loop |
 | `fl_saved` | Saved quotes (plain text array) |
 | `fl_ai2` | Today's cached AI batch `{date, lines}` (refetched daily) |
+| `fl_lastdaily` | `{date, t}` — yesterday's daily line, so today's pick is guaranteed different |
 | `fl_streak` | Orphaned (streak feature removed); harmless |
 
 All per-device. Clearing site data resets ratings, saves, and the AI cache.
@@ -142,6 +143,7 @@ Recorded so future patches don't relearn them:
 8. Scene keyword lists may legitimately contain words that look like removed features (e.g. `'ripple'` remains a lake-matching keyword after the ripple visuals were removed).
 9. **Plain words beat concept-labels.** A line that opens with an untranslated term (`Kaizen:`, `Wu wei:`) reads as name-dropping, not wisdom. Put the idea in a concrete image with small words; let the framework identity live in the tag. This applies to the AI prompt too (Edge Function v6 hard-bans such prefixes).
 10. **Bold, but earned — and not in every framework.** Morning affirmations want first-person "I am" power statements, but boldness needs a concrete anchor or it curdles into hype. And Buddhist/Taoist lines are about *letting go* of the grasping "I" — forcing "I am unstoppable" there betrays the idea. Push bold in Stoic/NLP/CBT/Japanese; keep Mindfulness gentle and Buddhist/Chinese grounded.
+11. **A resident PWA never re-runs boot, so `new Date()` freezes.** The date (and therefore the date-seeded daily line) was captured once at module load. An installed app that is backgrounded and reopened — instead of fully killed — keeps showing the day-one quote until a cold restart. This caused "same quote yesterday and today." Fixes: (a) recompute the day on `visibilitychange`/`focus` via `refreshForNewDay()` and re-pick if it rolled over; (b) use a **local** date key (`makeDayKey`, from `getFullYear/getMonth/getDate`), not `toISOString()` (UTC), so the day turns at the user's midnight; (c) belt-and-braces anti-repeat guard (`fl_lastdaily`) so today's line can't equal yesterday's even on a hash collision. The seeding hash itself was verified innocent — 0 consecutive-day repeats across a full year.
 
 ---
 
